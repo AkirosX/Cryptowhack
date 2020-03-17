@@ -17,25 +17,27 @@ def RC8(state, key, n):
         state = state >> 1 | b << 63
     n-=1
 
-def FuzzWorker(start, end):
-    print("test")
+def FuzzWorker(start, end, id):
+    print("WORKER THREAD " + str(id) + " STARTING RANGE: " + str(start) + " TO " + str(end))
     for i in range(9999):
         output = ""
         for j in range(start, end):
-            for z, x in enumerate(RC8(j, i, 4)):
+            for _, x in enumerate(RC8(i, j, 4)):
                 output += hex(x)
+                
+            print(output + "\n")
             if output == keystream:
                 print("MATCH FOUND! SEED: " + str(j) + " KEY: " + str(i))
     return
 
 def main():
-    mp.set_start_method('spawn')
-    q = mp.Queue()
     start = 0
-    end = 999
-    for _ in range(9):
-        p = mp.Process(target=FuzzWorker, args=(start,end))
+    end = 5
+
+    for _ in range(1):
+        p = mp.Process(target=FuzzWorker, args=(start,end, _))
         p.start()
+        p.join()
         start += 1000
         end += 1000
 
